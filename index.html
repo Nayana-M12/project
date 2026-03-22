@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DemoCrazy — Because Democracy Needs Merit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">🗳️ DemoCrazy</div>
+    <span class="tagline">Crack the exam. Run the nation. Probably ruin it.</span>
+    <div class="nav-links">
+      <a href="#news">📰 News</a>
+      <a href="#exams">📝 Exams</a>
+      <a href="#chatbot">🤖 Chatbot</a>
+      <a href="#leaderboard">🏆 Board</a>
+    </div>
+    <div class="nav-auth" id="navAuth">
+      <button class="btn-login" onclick="openAuth('login')">Login</button>
+      <button class="btn-signup" onclick="openAuth('signup')">Register as Candidate</button>
+    </div>
+    <div class="nav-user hidden" id="navUser">
+      <span class="user-avatar" id="userAvatar">🧑</span>
+      <button class="user-name-btn" id="userName" onclick="openProfile()"></button>
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- BREAKING NEWS TICKER -->
+  <div class="ticker-wrap">
+    <span class="ticker-label">BREAKING</span>
+    <span class="ticker-track" id="tickerTrack"></span>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>Want to Enter <span>Politics?</span></h1>
+    <h2>First, Pass the Exam. 😤</h2>
+    <p>India's first entrance exam for aspiring politicians.<br/>
+    JEE for MPs. NEET for MLAs. No marks? No ministry. Simple.</p>
+    <div class="hero-btns">
+      <a href="#exams" class="cta-btn">Start Your Political Career 🚀</a>
+      <a href="#leaderboard" class="cta-btn-ghost">View Leaderboard 🏆</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">4.2L+</div><div class="stat-label">Candidates Registered</div></div>
+      <div class="stat"><div class="stat-num">0</div><div class="stat-label">Promises Kept</div></div>
+      <div class="stat"><div class="stat-num">3</div><div class="stat-label">Exams Available</div></div>
+      <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Excuses Generated</div></div>
+    </div>
+  </section>
+
+  <!-- HOME / NEWS FEED -->
+  <section id="news" class="section home-section" style="padding:48px 48px;">
+    <div class="home-layout">
+
+      <!-- LEFT: MAIN FEED -->
+      <div class="feed-main">
+        <div class="feed-header">
+          <h2 class="section-title" style="text-align:left; margin-bottom:4px;">📰 Today's Political Circus</h2>
+          <p class="section-sub" style="text-align:left; margin-bottom:20px;">100% real news. Probably. We didn't check.</p>
+          <div class="news-cats" id="newsCats">
+            <button class="ncat active" onclick="filterNews('all',this)">All</button>
+            <button class="ncat" onclick="filterNews('BREAKING',this)">🔴 Breaking</button>
+            <button class="ncat" onclick="filterNews('POLITICS',this)">🏛️ Politics</button>
+            <button class="ncat" onclick="filterNews('EXAM NEWS',this)">📝 Exam</button>
+            <button class="ncat" onclick="filterNews('VIRAL',this)">🔥 Viral</button>
+          </div>
+        </div>
+
+        <!-- Featured card -->
+        <div class="news-featured" id="newsFeatured"></div>
+
+        <!-- Grid -->
+        <div class="news-grid" id="newsGrid"></div>
+      </div>
+
+      <!-- RIGHT: SIDEBAR -->
+      <aside class="feed-sidebar">
+
+        <!-- Quick links to sections -->
+        <div class="sidebar-card">
+          <h4 class="sidebar-title">🚀 Quick Access</h4>
+          <a href="#exams" class="sidebar-link">📝 Take a Mock Exam</a>
+          <a href="#chatbot" class="sidebar-link">🎤 Generate a Speech</a>
+          <a href="#chatbot" class="sidebar-link">🤞 Get Election Promises</a>
+          <a href="#leaderboard" class="sidebar-link">🏆 View Leaderboard</a>
+        </div>
+
+        <!-- Trending -->
+        <div class="sidebar-card">
+          <h4 class="sidebar-title">🔥 Trending Nonsense</h4>
+          <div id="trendingList"></div>
+        </div>
+
+        <!-- Joke of the day -->
+        <div class="sidebar-card joke-card">
+          <h4 class="sidebar-title">😂 Neta Quote of the Day</h4>
+          <p id="jokeText" class="joke-text"></p>
+          <button onclick="newJoke()" class="joke-btn">Next Quote 🔄</button>
+        </div>
+
+        <!-- Poll -->
+        <div class="sidebar-card">
+          <h4 class="sidebar-title">📊 Useless Poll</h4>
+          <p class="poll-q">Should politicians take an entrance exam?</p>
+          <div class="poll-options" id="pollOptions"></div>
+        </div>
+
+      </aside>
+    </div>
+  </section>
+
+  <!-- MOCK EXAMS -->
+  <section id="exams" class="section section-alt">
+    <h2 class="section-title">📝 Mock <span>Exams</span></h2>
+    <p class="section-sub">Prove you're smarter than your local politician. Low bar, we know.</p>
+    <div class="section-divider"></div>
+    <div class="exam-cards">
+      <div class="exam-card" onclick="startExam('POLYJEE')">
+        <div class="exam-icon">🏛️</div>
+        <h3>POLY-JEE</h3>
+        <p>For Lok Sabha candidates</p>
+        <span class="badge">200 Questions • 3 hrs<br/>No cheating (we're watching)</span>
+        <button class="exam-btn">Attempt Now</button>
+      </div>
+      <div class="exam-card" onclick="startExam('NETA-NEET')">
+        <div class="exam-icon">💉</div>
+        <h3>NETA-NEET</h3>
+        <p>For State Assembly candidates</p>
+        <span class="badge">180 Questions • 2.5 hrs<br/>Promises not allowed</span>
+        <button class="exam-btn">Attempt Now</button>
+      </div>
+      <div class="exam-card" onclick="startExam('CAT-MINISTER')">
+        <div class="exam-icon">🐱</div>
+        <h3>CAT-MINISTER</h3>
+        <p>For Cabinet Minister hopefuls</p>
+        <span class="badge">100 Questions • 2 hrs<br/>Corruption section included</span>
+        <button class="exam-btn">Attempt Now</button>
+      </div>
+    </div>
+
+    <!-- EXAM MODAL -->
+    <div id="examModal" class="modal hidden">
+      <div class="modal-box">
+        <button class="close-btn" onclick="closeExam()">✕</button>
+        <h3 id="examTitle">Exam</h3>
+        <div class="exam-progress"><div class="exam-progress-fill" id="progressFill" style="width:20%"></div></div>
+        <div id="questionBox"></div>
+        <div class="exam-controls">
+          <button onclick="prevQ()">⬅ Prev</button>
+          <span id="qCounter">Q 1 / 5</span>
+          <button onclick="nextQ()">Next ➡</button>
+        </div>
+        <button class="submit-btn" onclick="submitExam()">Submit & Get Rank 🎓</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHATBOT -->
+  <section id="chatbot" class="section">
+    <h2 class="section-title">🤖 Political <span>AI Chatbot</span></h2>
+    <p class="section-sub">Powered by 100% artificial stupidity</p>
+    <div class="section-divider"></div>
+    <div class="chatbot-container">
+      <div class="chat-tabs">
+        <button class="tab-btn active" onclick="switchTab('speech', this)">🎤 Speech Generator</button>
+        <button class="tab-btn" onclick="switchTab('promise', this)">🤞 Promise Generator</button>
+      </div>
+
+      <div id="speechTab" class="tab-content">
+        <p class="tab-desc">Enter any topic and receive a world-class political speech (completely useless, guaranteed)</p>
+        <input id="speechTopic" type="text" placeholder="e.g. Pothole, Mango, Cricket, Inflation..." />
+        <button onclick="generateSpeech()">Generate Speech 🎙️</button>
+        <div id="speechOutput" class="output-box hidden"></div>
+      </div>
+
+      <div id="promiseTab" class="tab-content hidden">
+        <p class="tab-desc">Generate election promises that will definitely be kept. (They won't.)</p>
+        <select id="promiseState">
+          <option value="any">🗺️ Any State</option>
+          <option value="UP">Uttar Pradesh</option>
+          <option value="TN">Tamil Nadu</option>
+          <option value="MH">Maharashtra</option>
+          <option value="DL">Delhi</option>
+        </select>
+        <button onclick="generatePromise()">Generate Promise 🤞</button>
+        <div id="promiseOutput" class="output-box hidden"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section id="leaderboard" class="section section-alt">
+    <h2 class="section-title">🏆 National <span>Leaderboard</span></h2>
+    <p class="section-sub">Top scorers who are definitely going to fix the country (they're not)</p>
+    <div class="section-divider"></div>
+    <div class="leaderboard-filters">
+      <button class="filter-btn active" onclick="filterBoard('all', this)">🇮🇳 All India</button>
+      <button class="filter-btn" onclick="filterBoard('POLYJEE', this)">POLY-JEE</button>
+      <button class="filter-btn" onclick="filterBoard('NETA-NEET', this)">NETA-NEET</button>
+      <button class="filter-btn" onclick="filterBoard('CAT-MINISTER', this)">CAT-MINISTER</button>
+    </div>
+    <table class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Candidate</th>
+          <th>State</th>
+          <th>Exam</th>
+          <th>Score</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboardBody"></tbody>
+    </table>
+  </section>
+
+  <footer class="footer">
+    <p>© 2024 <span>DemoCrazy</span> | No politicians were harmed in the making of this website.</p>
+    <p>Results are fictional. Any resemblance to actual politicians is purely unfortunate.</p>
+  </footer>
+
+  <!-- AUTH MODAL -->
+  <div id="authModal" class="modal hidden">
+    <div class="modal-box auth-box">
+      <button class="close-btn" onclick="closeAuth()">✕</button>
+
+      <!-- tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">🔑 Login</button>
+        <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">📋 Register</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="loginForm">
+        <p class="auth-sub">Welcome back, future PM 👋</p>
+        <div class="auth-field">
+          <label>Candidate ID / Email</label>
+          <input type="text" id="loginEmail" placeholder="e.g. pappu@politics.in" />
+        </div>
+        <div class="auth-field">
+          <label>Password (not your constituency name, please)</label>
+          <input type="password" id="loginPass" placeholder="••••••••" />
+        </div>
+        <div id="loginError" class="auth-error hidden"></div>
+        <button class="auth-submit" onclick="doLogin()">Login & Start Ruining the Country 🚀</button>
+        <p class="auth-switch">No account? <a onclick="switchAuthTab('signup')">Register as Candidate</a></p>
+      </div>
+
+      <!-- SIGNUP -->
+      <div id="signupForm" class="hidden">
+        <p class="auth-sub">Join 4.2L+ candidates who definitely won't keep their promises 😇</p>
+        <div class="auth-row">
+          <div class="auth-field">
+            <label>Full Name</label>
+            <input type="text" id="signupName" placeholder="e.g. Pappu Kumar Sharma" />
+          </div>
+          <div class="auth-field">
+            <label>Party Name (real or made up)</label>
+            <input type="text" id="signupParty" placeholder="e.g. Aam Aadmi Tamasha Party" />
+          </div>
+        </div>
+        <div class="auth-field">
+          <label>Email</label>
+          <input type="email" id="signupEmail" placeholder="yourname@politics.in" />
+        </div>
+        <div class="auth-field">
+          <label>State</label>
+          <select id="signupState">
+            <option value="">Select your state</option>
+            <option>Uttar Pradesh</option>
+            <option>Tamil Nadu</option>
+            <option>Maharashtra</option>
+            <option>Delhi</option>
+            <option>Bihar</option>
+            <option>Karnataka</option>
+            <option>Rajasthan</option>
+            <option>West Bengal</option>
+            <option>Other (forming a new state)</option>
+          </select>
+        </div>
+        <div class="auth-field">
+          <label>Password</label>
+          <input type="password" id="signupPass" placeholder="Min 8 chars (unlike your IQ requirement)" />
+        </div>
+        <div class="auth-field">
+          <label>Why do you want to enter politics?</label>
+          <select id="signupReason">
+            <option value="">Be honest...</option>
+            <option>Genuinely want to serve the nation 🙏</option>
+            <option>Free bungalow + car + security 🏠</option>
+            <option>My family has been doing it for 3 generations</option>
+            <option>I lost a bet</option>
+            <option>I want to inaugurate things</option>
+          </select>
+        </div>
+        <div id="signupError" class="auth-error hidden"></div>
+        <button class="auth-submit" onclick="doSignup()">Register & Destroy Democracy 🎉</button>
+        <p class="auth-switch">Already registered? <a onclick="switchAuthTab('login')">Login</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE MODAL -->
+  <div id="profileModal" class="modal hidden">
+    <div class="modal-box profile-box">
+      <button class="close-btn" onclick="closeProfile()">✕</button>
+
+      <div id="profileView">
+        <div class="profile-header">
+          <div class="profile-avatar-big" id="profileAvatarBig">🧑</div>
+          <div>
+            <h3 class="profile-name" id="profileName"></h3>
+            <span class="profile-id" id="profileId"></span>
+          </div>
+        </div>
+        <div class="profile-grid">
+          <div class="profile-item"><span class="pi-label">🏛️ Party</span><span class="pi-val" id="pParty"></span></div>
+          <div class="profile-item"><span class="pi-label">📍 State</span><span class="pi-val" id="pState"></span></div>
+          <div class="profile-item"><span class="pi-label">📧 Email</span><span class="pi-val" id="pEmail"></span></div>
+          <div class="profile-item"><span class="pi-label">🤔 Why Politics?</span><span class="pi-val" id="pReason"></span></div>
+        </div>
+        <div class="profile-stats-row">
+          <div class="ps-card"><div class="ps-num">0</div><div class="ps-label">Exams Taken</div></div>
+          <div class="ps-card"><div class="ps-num">0</div><div class="ps-label">Promises Made</div></div>
+          <div class="ps-card"><div class="ps-num">0</div><div class="ps-label">Promises Kept</div></div>
+        </div>
+        <button class="auth-submit" style="margin-top:16px" onclick="openEditProfile()">✏️ Edit Profile</button>
+      </div>
+
+      <div id="profileEdit" class="hidden">
+        <h3 style="font-family:Poppins,sans-serif;font-size:1.1rem;margin-bottom:16px;color:var(--text)">✏️ Edit Profile</h3>
+        <div class="auth-row">
+          <div class="auth-field">
+            <label>Full Name</label>
+            <input type="text" id="editName" />
+          </div>
+          <div class="auth-field">
+            <label>Party Name</label>
+            <input type="text" id="editParty" />
+          </div>
+        </div>
+        <div class="auth-field">
+          <label>State</label>
+          <select id="editState">
+            <option>Uttar Pradesh</option>
+            <option>Tamil Nadu</option>
+            <option>Maharashtra</option>
+            <option>Delhi</option>
+            <option>Bihar</option>
+            <option>Karnataka</option>
+            <option>Rajasthan</option>
+            <option>West Bengal</option>
+            <option>Other (forming a new state)</option>
+          </select>
+        </div>
+        <div class="auth-field">
+          <label>Why do you want to enter politics?</label>
+          <select id="editReason">
+            <option>Genuinely want to serve the nation 🙏</option>
+            <option>Free bungalow + car + security 🏠</option>
+            <option>My family has been doing it for 3 generations</option>
+            <option>I lost a bet</option>
+            <option>I want to inaugurate things</option>
+          </select>
+        </div>
+        <div class="auth-field">
+          <label>New Password <span style="color:var(--muted);font-weight:400">(leave blank to keep current)</span></label>
+          <input type="password" id="editPass" placeholder="••••••••" />
+        </div>
+        <div id="editError" class="auth-error hidden"></div>
+        <div style="display:flex;gap:10px">
+          <button class="auth-submit" onclick="saveProfile()">💾 Save Changes</button>
+          <button class="btn-cancel" onclick="cancelEdit()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
