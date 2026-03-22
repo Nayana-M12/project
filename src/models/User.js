@@ -9,6 +9,9 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true,
   },
+  party: { type: String, default: 'Independent (Confused)' },
+  state: { type: String, default: '' },
+  reason: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now },
 });
 

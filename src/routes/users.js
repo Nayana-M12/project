@@ -4,14 +4,14 @@ const User = require("../models/User");
 
 // POST /api/users - register a user
 router.post("/", async (req, res) => {
-  const { name, email } = req.body;
+  const { name, email, party, state, reason } = req.body;
 
   if (!name || !email) {
     return res.status(400).json({ error: "name and email are required" });
   }
 
   try {
-    const user = await User.create({ name, email });
+    const user = await User.create({ name, email, party, state, reason });
     res.status(201).json(user);
   } catch (err) {
     if (err.code === 11000) {

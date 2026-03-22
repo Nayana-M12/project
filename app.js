@@ -1,5 +1,64 @@
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = 'http://localhost:8888/api';
+
+// ─── PAGE NAVIGATION ──────────────────────────────────────────────────────────
+function enterApp(page) {
+  // only allow entry if logged in
+  if (!currentUser) {
+    openAuth('login');
+    return;
+  }
+  const landing = document.getElementById('landingPage');
+  landing.classList.add('hide');
+  setTimeout(() => { landing.style.display = 'none'; }, 500);
+  showPage(page || 'home', null);
+}
+
+function openAuthFromLanding(tab) {
+  document.querySelectorAll('.landing-info').forEach(p => p.style.display = 'none');
+  const hero = document.querySelector('.landing-hero');
+  if (hero) hero.style.display = '';
+  openAuth(tab);
+}
+
+function showLandingHero() {
+  document.querySelectorAll('.landing-info').forEach(p => p.style.display = 'none');
+  const hero = document.querySelector('.landing-hero');
+  if (hero) hero.style.display = '';
+  document.querySelectorAll('.landing-nav-links a').forEach(a => a.classList.remove('active'));
+}
+
+function showLandingInfo(section, el) {
+  const hero = document.querySelector('.landing-hero');
+  if (hero) hero.style.display = 'none';
+  document.querySelectorAll('.landing-info').forEach(p => p.style.display = 'none');
+  document.getElementById('info-' + section).style.display = 'flex';
+  document.querySelectorAll('.landing-nav-links a').forEach(a => a.classList.remove('active'));
+  if (el) el.classList.add('active');
+}
+
+function showPage(name, navEl) {
+  // block if landing page is still visible (user not logged in yet)
+  const landing = document.getElementById('landingPage');
+  const landingVisible = landing && landing.style.display !== 'none' && !landing.classList.contains('hide');
+  if (landingVisible && !currentUser) {
+    openAuth('login');
+    return;
+  }
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.sidebar-nav-item').forEach(el => el.classList.remove('active'));
+  if (navEl) {
+    navEl.classList.add('active');
+  } else {
+    document.querySelectorAll('.sidebar-nav-item').forEach(el => {
+      if (el.getAttribute('onclick') && el.getAttribute('onclick').includes("'" + name + "'")) {
+        el.classList.add('active');
+      }
+    });
+  }
+  window.scrollTo(0, 0);
+}
 
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 // fake in-memory user store
@@ -30,7 +89,7 @@ function doLogin() {
   loginSuccess(user);
 }
 
-function doSignup() {
+async function doSignup() {
   const name   = document.getElementById('signupName').value.trim();
   const party  = document.getElementById('signupParty').value.trim();
   const email  = document.getElementById('signupEmail').value.trim();
@@ -44,14 +103,26 @@ function doSignup() {
   if (users.find(u => u.email === email)) { showErr(err, '❌ Email already registered. You can\'t run twice. Yet.'); return; }
 
   const user = { name, party: party || 'Independent (Confused)', email, state, pass, reason, id: 'CAND-' + Math.floor(Math.random()*90000+10000) };
+
+  // sync to backend first
+  try {
+    const res = await fetch(`${API_BASE}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, party: party || 'Independent (Confused)', state, reason })
+    });
+    const data = await res.json();
+    if (!res.ok && res.status !== 409) {
+      showErr(err, '⚠️ Server error: ' + (data.error || 'Could not save. Try again.'));
+      return;
+    }
+  } catch (e) {
+    // backend unreachable — continue with local storage only
+    console.warn('Backend unreachable, saving locally only:', e);
+  }
+
   users.push(user);
   localStorage.setItem('DemoCrazy_users', JSON.stringify(users));
-  // sync to backend
-  fetch(`${API_BASE}/users`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email })
-  }).catch(() => {}); // silent fail — local auth still works
   loginSuccess(user);
 }
 
@@ -61,6 +132,13 @@ function loginSuccess(user) {
   closeAuth();
   updateNavUser();
   showToast(`🎉 Welcome, ${user.name.split(' ')[0]}! Your political career starts now. We're sorry.`);
+  // dismiss landing page and enter app
+  const landing = document.getElementById('landingPage');
+  if (landing && !landing.classList.contains('hide')) {
+    landing.classList.add('hide');
+    setTimeout(() => { landing.style.display = 'none'; }, 500);
+    showPage('home', null);
+  }
 }
 
 function logout() {
@@ -68,18 +146,33 @@ function logout() {
   localStorage.removeItem('DemoCrazy_current');
   updateNavUser();
   showToast('👋 Logged out. The nation breathes easy.');
+  // bring back landing page
+  const landing = document.getElementById('landingPage');
+  landing.classList.remove('hide');
+  landing.style.display = '';
+  // reset to hero view
+  document.querySelectorAll('.landing-info').forEach(p => p.style.display = 'none');
+  const hero = document.querySelector('.landing-hero');
+  if (hero) hero.style.display = '';
+  document.querySelectorAll('.landing-nav-links a').forEach(a => a.classList.remove('active'));
 }
 
 function updateNavUser() {
-  const authEl = document.getElementById('navAuth');
-  const userEl = document.getElementById('navUser');
+  const sidebarAuth = document.getElementById('sidebarAuth');
+  const sidebarLogout = document.getElementById('sidebarLogout');
+  const sidebarName = document.getElementById('sidebarName');
   if (currentUser) {
-    authEl.classList.add('hidden');
-    userEl.classList.remove('hidden');
-    document.getElementById('userName').textContent = currentUser.name.split(' ')[0];
+    sidebarAuth.classList.add('hidden');
+    sidebarLogout.classList.remove('hidden');
+    sidebarName.textContent = currentUser.name.split(' ')[0];
+    sidebarName.onclick = openProfile;
+    document.getElementById('sidebarAvatar').onclick = openProfile;
   } else {
-    authEl.classList.remove('hidden');
-    userEl.classList.add('hidden');
+    sidebarAuth.classList.remove('hidden');
+    sidebarLogout.classList.add('hidden');
+    sidebarName.textContent = 'Guest';
+    sidebarName.onclick = null;
+    document.getElementById('sidebarAvatar').onclick = null;
   }
 }
 
@@ -441,8 +534,15 @@ function submitExam() {
 
 // ─── CHATBOT ──────────────────────────────────────────────────────────────────
 const speechTemplates = [
-  (t) => `My dear brothers and sisters,\n\nToday I stand before you to talk about ${t}. For too long, ${t} has been ignored by the previous government. But I promise you — under my leadership, ${t} will be revolutionized!\n\nWe will form a high-level committee to study ${t}. The committee will submit a report in 6 months. The report will be reviewed in another 6 months. And then, my friends, we will think about it.\n\nJai Hind! 🇮🇳`,
-  (t) => `Friends, the issue of ${t} is not just an issue — it is an emotion. It is a feeling. It is a sentiment that runs deep in the veins of every Indian.\n\nThe opposition has destroyed ${t}. They had 70 years! 70 years and they did nothing about ${t}. But we, in just 5 years, have thought about ${t} at least twice.\n\nVote for me and ${t} will be fixed. Probably. Maybe. Inshallah.\n\nThank you. Jai Mata Di! 🙏`,
+  (t) => `🎙️ OFFICIAL POLITICAL ADDRESS\n${'─'.repeat(40)}\n\nMy dear brothers, sisters, and people who accidentally wandered in,\n\nToday I stand before you to talk about ${t}. For 75 years, ${t} has suffered. My heart bleeds. My eyes water. My accountant is concerned.\n\nThe previous government had ONE job — fix ${t}. Instead, they went on foreign trips to "study" ${t} in Switzerland. Switzerland! As if ${t} grows in the Alps!\n\nBut friends, I am different. I have a VISION. A ROADMAP. A POWERPOINT with 47 slides about ${t}. Slide 3 is particularly moving.\n\nOur 5-point plan for ${t}:\n1. Acknowledge ${t} exists ✅ (done today)\n2. Form a committee 📋\n3. Rename the committee 📋➡️📋\n4. Lose the committee's report 🗑️\n5. Blame the opposition for ${t} 👉\n\n"${t} is not just a problem. It is an opportunity. An opportunity for me to get re-elected."\n\nJai Hind! Vote wisely! (Vote for me.) 🇮🇳`,
+
+  (t) => `🎙️ EMERGENCY PRESS CONFERENCE\n${'─'.repeat(40)}\n\nNamaste, respected journalists and people who came for the free samosas.\n\nI have been asked about ${t}. Let me be crystal clear — we take ${t} very, very seriously. So seriously that we have formed not one, not two, but THREE committees on ${t}.\n\nCommittee 1: Studies ${t}\nCommittee 2: Studies Committee 1\nCommittee 3: Has not met yet (key members are on a study tour of Dubai)\n\nThe opposition says we have done nothing about ${t}. This is FALSE. We have done NOTHING about ${t} very efficiently. Do you know how hard it is to do nothing this consistently? It requires dedication.\n\nI want to assure the nation — ${t} will be resolved before the next election. Which election? I cannot say. There are many elections.\n\n"If ${t} were a person, I would shake its hand and promise it a cabinet position."\n\nThank you. No questions. Especially not about ${t}. 🚪`,
+
+  (t) => `🎙️ ELECTION RALLY SPEECH — CLASSIFIED\n${'─'.repeat(40)}\n\nYUVAON! MAHILAON! BUZURGON! AND THAT ONE GUY ASLEEP IN THE BACK!\n\n${t.toUpperCase()}! Say it with me! ${t.toUpperCase()}!\n\nMy friends, the issue of ${t} is not just an issue. It is an emotion. A sentiment. A WhatsApp forward that has been shared 4 lakh times.\n\nI remember when I was young, my mother said to me — "Beta, one day you will fix ${t}." I said, "Maa, I don't even know what ${t} is." She said, "Neither do the politicians, but they talk about it anyway."\n\nAnd here I am.\n\nThe opposition laughs at ${t}. They LAUGH! While you suffer, they laugh. While you cry, they laugh. Honestly they seem to be having a great time but that is NOT THE POINT.\n\nVote for me and I PERSONALLY guarantee that ${t} will be mentioned in at least 3 more speeches.\n\nBharat Mata Ki Jai! 🇮🇳✊ (Please also follow me on Instagram)`,
+
+  (t) => `🎙️ BUDGET SESSION SPEECH\n${'─'.repeat(40)}\n\nHon'ble Speaker, distinguished members, and the gentleman sleeping in Row C,\n\nI rise to speak on the matter of ${t}. This is a matter of grave national importance. I have prepared a 4-hour speech on ${t}. Don't worry — I will only read the first 3 hours and 58 minutes.\n\nThe numbers on ${t} are shocking:\n📊 ${t} has increased by 200% (source: I made this up)\n📊 ${t} affects 84.7% of Indians (the 0.7% is very specific and therefore trustworthy)\n📊 ₹47,000 crore has been allocated for ${t} (₹46,999 crore is for administrative costs)\n\nThe opposition's policy on ${t} can be summarised in one word: chaos. Actually two words: total chaos. Three words: absolute total chaos.\n\nOur government's policy on ${t} is bold, visionary, and will be announced after further consultation, pending committee approval, subject to budget availability, weather permitting.\n\n"${t} is the backbone of this nation. We will not rest until that backbone is thoroughly examined by a subcommittee."\n\nI yield the floor. Please wake up Row C. 🛎️`,
+
+  (t) => `🎙️ VICTORY SPEECH (PRE-WRITTEN, JUST IN CASE)\n${'─'.repeat(40)}\n\nThe people have spoken! And what they said was: "${t}!"\n\nI am humbled. I am moved. I am also slightly surprised because my astrologer said it would be closer.\n\nThis victory is not mine — it belongs to every person who believed that ${t} could be solved. It belongs to the auto driver who drove me to the rally. It belongs to my cousin who managed my social media. It belongs to the 47 people who actually read my manifesto on ${t}.\n\nTo my opponents: I respect you. I respect your views on ${t}. I respect that you also had no idea how to fix ${t} but at least we were confused together.\n\nMy first act as your representative: I will personally visit the ${t} situation. I will look at it. I will nod seriously. I will say "hmmm." A photo will be taken. Change will be implied.\n\nThe journey of a thousand miles begins with a single press release about ${t}.\n\nJai Hind! 🎉🇮🇳 (Fireworks budget: ₹2 crore. ${t} budget: pending.)`,
 ];
 
 const promiseBank = {
@@ -452,42 +552,71 @@ const promiseBank = {
     "Every citizen will receive a certificate of appreciation for paying taxes 📜",
     "Parliament sessions will now include a mandatory nap time 😴",
     "All politicians will wear GPS trackers. The data will be kept secret. 🛰️",
+    "We will build a wall around corruption. Corruption will pay for it. 🧱",
+    "Every government form will be reduced to just one page. The font will be size 2. 📄",
+    "Inflation will be renamed 'Price Enthusiasm' to boost morale 📈",
+    "A new ministry of Excuses will be established with a budget of ₹500 crore 💼",
+    "All traffic signals will be made optional to improve flow 🚦",
   ],
   UP: [
     "Free samosa with every government document 🥟",
     "Expressways will be built to every relative's village 🛣️",
     "Ganga will be cleaned by 2047. Or 2050. We'll see. 🌊",
+    "Every UP resident will get a free lathi for self-defence 🪄",
   ],
   TN: [
     "Free biryani on all government holidays 🍛",
     "Every auto driver will receive a philosophy degree 🛺",
     "Chennai rains will be officially renamed 'Blessings' 🌧️",
+    "Rajinikanth will be appointed Chief Advisor of Everything 🕶️",
   ],
   MH: [
     "Vada pav will be declared the national food of Maharashtra 🍔",
     "Mumbai local trains will run on time (April Fools!) 🚂",
     "Every Mumbaikar will get 10 extra square feet of personal space 📐",
+    "Dharavi will be redeveloped into a 5-star slum 🏙️",
   ],
   DL: [
     "Odd-even rule extended to politicians — only half can lie on odd days 🚗",
     "Free AAP umbrella with every vote 🌂",
     "Delhi air quality will be upgraded from 'Hazardous' to 'Spicy' 😷",
+    "Yamuna will be cleaned. Again. For the 14th time. 🏞️",
   ],
 };
-
-function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-  document.getElementById(tab + 'Tab').classList.remove('hidden');
-  btn.classList.add('active');
-}
 
 function generateSpeech() {
   const topic = document.getElementById('speechTopic').value.trim() || 'corruption';
   const template = speechTemplates[Math.floor(Math.random() * speechTemplates.length)];
+  const text = template(topic);
   const out = document.getElementById('speechOutput');
-  out.textContent = template(topic);
+
+  // typewriter effect
   out.classList.remove('hidden');
+  out.innerHTML = '<span class="speech-cursor"></span>';
+  let i = 0;
+  const speed = 18;
+  function type() {
+    if (i < text.length) {
+      out.innerHTML = text.slice(0, i + 1).replace(/\n/g, '<br/>') + '<span class="speech-cursor">|</span>';
+      i++;
+      setTimeout(type, speed);
+    } else {
+      out.innerHTML = text.replace(/\n/g, '<br/>');
+      out.innerHTML += `
+        <div class="gen-actions">
+          <button onclick="copySpeech()" class="gen-action-btn">📋 Copy Speech</button>
+          <button onclick="generateSpeech()" class="gen-action-btn">🔄 Regenerate</button>
+        </div>`;
+    }
+  }
+  type();
+}
+
+function copySpeech() {
+  const topic = document.getElementById('speechTopic').value.trim() || 'corruption';
+  const template = speechTemplates[Math.floor(Math.random() * speechTemplates.length)];
+  navigator.clipboard.writeText(template(topic)).catch(() => {});
+  showToast('📋 Speech copied! Go ruin democracy.');
 }
 
 function generatePromise() {
@@ -495,10 +624,34 @@ function generatePromise() {
   const pool = [...promiseBank.any, ...(promiseBank[state] || [])];
   const picked = pool.sort(() => Math.random() - 0.5).slice(0, 3);
   const out = document.getElementById('promiseOutput');
-  out.textContent = "📋 Official Election Promises:\n\n" + picked.map((p, i) => `${i + 1}. ${p}`).join('\n\n');
+
   out.classList.remove('hidden');
+  out.innerHTML = `
+    <div class="promise-header">📋 Official Election Promises <span class="promise-stamp">CERTIFIED HOLLOW™</span></div>
+    <div class="promise-cards">
+      ${picked.map((p, i) => `
+        <div class="promise-card" style="animation-delay:${i * 0.12}s">
+          <div class="promise-num">${i + 1}</div>
+          <div class="promise-text">${p}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="promise-disclaimer">⚠️ These promises have a 0% fulfillment rate. Results may vary. Void where democracy exists.</div>
+    <div class="gen-actions">
+      <button onclick="copyPromises()" class="gen-action-btn">📋 Copy Promises</button>
+      <button onclick="generatePromise()" class="gen-action-btn">🔄 New Promises</button>
+    </div>
+  `;
+
   // track analytics
   fetch(`${API_BASE}/analytics/promise`, { method: 'POST' }).catch(() => {});
+}
+
+function copyPromises() {
+  const cards = document.querySelectorAll('.promise-text');
+  const text = [...cards].map((c, i) => `${i+1}. ${c.textContent}`).join('\n');
+  navigator.clipboard.writeText(text).catch(() => {});
+  showToast('📋 Promises copied! Good luck keeping them.');
 }
 
 // ─── LEADERBOARD ──────────────────────────────────────────────────────────────
@@ -579,3 +732,10 @@ initJoke();
 renderPoll();
 loadLeaderboard();
 updateNavUser();
+
+// if already logged in, skip landing page
+if (currentUser) {
+  const landing = document.getElementById('landingPage');
+  if (landing) landing.style.display = 'none';
+  showPage('home', null);
+}
