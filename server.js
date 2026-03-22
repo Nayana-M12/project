@@ -10,17 +10,20 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: '*' }));
 app.use(express.json());
+
+// Serve frontend static files
+app.use(express.static(__dirname));
 
 // Routes
 app.use("/api/leaderboard", require("./src/routes/leaderboard"));
 app.use("/api/users", require("./src/routes/users"));
 app.use("/api/analytics", require("./src/routes/analytics"));
 
-// Health check
+// Serve index.html for root
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to the Politician Entrance Coaching Portal API" });
+  res.sendFile(__dirname + "/index.html");
 });
 
 // Error handler

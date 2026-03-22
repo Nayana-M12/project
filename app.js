@@ -1,3 +1,6 @@
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const API_BASE = 'http://localhost:3001/api';
+
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 // fake in-memory user store
 const users = JSON.parse(localStorage.getItem('DemoCrazy_users') || '[]');
@@ -43,6 +46,12 @@ function doSignup() {
   const user = { name, party: party || 'Independent (Confused)', email, state, pass, reason, id: 'CAND-' + Math.floor(Math.random()*90000+10000) };
   users.push(user);
   localStorage.setItem('DemoCrazy_users', JSON.stringify(users));
+  // sync to backend
+  fetch(`${API_BASE}/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email })
+  }).catch(() => {}); // silent fail — local auth still works
   loginSuccess(user);
 }
 
@@ -420,6 +429,14 @@ function submitExam() {
 
   document.querySelector('.exam-controls').style.display = 'none';
   document.querySelector('.submit-btn').style.display = 'none';
+
+  // save score to backend
+  const playerName = currentUser ? currentUser.name : 'Anonymous Neta';
+  fetch(`${API_BASE}/leaderboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: playerName, score: Math.round(percent) })
+  }).then(() => loadLeaderboard()).catch(() => {});
 }
 
 // ─── CHATBOT ──────────────────────────────────────────────────────────────────
@@ -480,9 +497,12 @@ function generatePromise() {
   const out = document.getElementById('promiseOutput');
   out.textContent = "📋 Official Election Promises:\n\n" + picked.map((p, i) => `${i + 1}. ${p}`).join('\n\n');
   out.classList.remove('hidden');
+  // track analytics
+  fetch(`${API_BASE}/analytics/promise`, { method: 'POST' }).catch(() => {});
 }
 
 // ─── LEADERBOARD ──────────────────────────────────────────────────────────────
+// seed data shown until backend responds
 const leaderboardData = [
   { name: "Pappu Sharma", state: "UP", exam: "POLYJEE", score: 187, status: "pass" },
   { name: "Kamla Devi", state: "TN", exam: "NETA-NEET", score: 174, status: "pass" },
@@ -496,7 +516,28 @@ const leaderboardData = [
   { name: "Feku Lal", state: "MH", exam: "POLYJEE", score: 12, status: "fail" },
 ];
 
+let liveLeaderboard = [...leaderboardData];
 let currentFilter = 'all';
+
+async function loadLeaderboard() {
+  try {
+    const res = await fetch(`${API_BASE}/leaderboard`);
+    const data = await res.json();
+    if (data.length > 0) {
+      // map backend shape to frontend shape
+      liveLeaderboard = data.map(d => ({
+        name: d.name,
+        state: '🗳️',
+        exam: 'POLYJEE',
+        score: d.score,
+        status: d.score >= 60 ? 'pass' : d.score >= 40 ? 'pending' : 'fail'
+      }));
+    }
+  } catch (e) {
+    // fallback to seed data silently
+  }
+  renderLeaderboard();
+}
 
 function filterBoard(filter, btn) {
   currentFilter = filter;
@@ -507,8 +548,8 @@ function filterBoard(filter, btn) {
 
 function renderLeaderboard() {
   const data = currentFilter === 'all'
-    ? leaderboardData
-    : leaderboardData.filter(d => d.exam === currentFilter);
+    ? liveLeaderboard
+    : liveLeaderboard.filter(d => d.exam === currentFilter);
 
   const sorted = [...data].sort((a, b) => b.score - a.score);
   const tbody = document.getElementById('leaderboardBody');
@@ -536,5 +577,5 @@ renderNews();
 renderTrending();
 initJoke();
 renderPoll();
-renderLeaderboard();
+loadLeaderboard();
 updateNavUser();
