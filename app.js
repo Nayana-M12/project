@@ -396,25 +396,25 @@ function vote(i) {
 // ─── MOCK EXAM ────────────────────────────────────────────────────────────────
 const examQuestions = {
   'POLYJEE': [
-    { q: "What is the full form of MP?", opts: ["Member of Parliament", "More Promises", "Mango Person", "My Privilege"], ans: 0 },
-    { q: "How many states are in India?", opts: ["28", "29", "30", "I'll form a committee to find out"], ans: 0 },
-    { q: "The Constitution of India was adopted on:", opts: ["15 Aug 1947", "26 Jan 1950", "26 Nov 1949", "After tea break"], ans: 2 },
-    { q: "What does 'Jai Hind' mean?", opts: ["Victory to India", "Good Morning India", "Vote for me", "All of the above"], ans: 0 },
-    { q: "A no-confidence motion requires how many days notice?", opts: ["7 days", "10 days", "14 days", "Whenever I feel like it"], ans: 2 },
+    { q: "If a banana and a potato have an argument, who wins the election?", opts: ["Banana, obviously", "Potato, it has more roots", "The onion who was crying nearby", "None, they form a coalition"], ans: 2 },
+    { q: "A politician promises to bring the moon. What is the moon's current reaction?", opts: ["Excited", "Filing a restraining order", "Already packed its bags", "Asking for a bribe first"], ans: 1 },
+    { q: "How many promises does a neta make before breakfast?", opts: ["Zero, they skip breakfast", "47", "Infinity, they're still going", "Only one — to eat breakfast"], ans: 2 },
+    { q: "If corruption weighs 5kg and democracy weighs 2kg, what is the combined weight of Indian politics?", opts: ["7kg", "A lot of drama", "Depends on the season", "Please form a committee"], ans: 1 },
+    { q: "A minister's car has 8 wheels. How many potholes does it avoid?", opts: ["All of them", "None, it flies", "It doesn't — it made the potholes", "Exactly 3.5"], ans: 2 },
   ],
   'NETA-NEET': [
-    { q: "Which vitamin is obtained from sunlight?", opts: ["Vitamin A", "Vitamin B", "Vitamin C", "Vitamin D"], ans: 3 },
-    { q: "What is the powerhouse of the cell?", opts: ["Nucleus", "Mitochondria", "My constituency office", "Ribosome"], ans: 1 },
-    { q: "DNA stands for:", opts: ["Do Not Ask", "Deoxyribonucleic Acid", "Daily Neta Activity", "Data Not Available"], ans: 1 },
-    { q: "Normal human body temperature is:", opts: ["37°C", "98°C", "100°F", "Hot-headed"], ans: 0 },
-    { q: "Which organ purifies blood?", opts: ["Heart", "Liver", "Kidney", "The Election Commission"], ans: 2 },
+    { q: "A doctor and a politician both lie. Who recovers faster?", opts: ["The doctor", "The politician", "The patient", "The lie itself"], ans: 3 },
+    { q: "If you eat 3 free biryani packets from 3 different parties, what do you get?", opts: ["Full stomach", "Indigestion and confusion", "A cabinet post", "All of the above"], ans: 3 },
+    { q: "What is the scientific name of a neta who disappears after elections?", opts: ["Homo Abscondus", "Promiseus Brokus", "Ghaibus Maximus", "All of the above"], ans: 2 },
+    { q: "A rally has 10,000 people. 9,999 are paid ₹500 each. What is the total enthusiasm?", opts: ["Very high", "₹49,99,500", "One genuine supporter", "Depends on the samosa quality"], ans: 2 },
+    { q: "Which is heavier — a politician's speech or a politician's work?", opts: ["The speech, always", "The work, obviously", "They weigh the same: zero", "Please don't ask this"], ans: 0 },
   ],
   'CAT-MINISTER': [
-    { q: "If a minister takes 3 hours to make a decision that takes 10 mins, what is the efficiency?", opts: ["Very high", "5.5%", "Negative", "Depends on election year"], ans: 2 },
-    { q: "A budget deficit means:", opts: ["Spending > Revenue", "Revenue > Spending", "Money is a social construct", "Time to print more notes"], ans: 0 },
-    { q: "GDP stands for:", opts: ["Gross Domestic Product", "Government's Daily Promise", "Grand Development Plan", "Get Demonetized Please"], ans: 0 },
-    { q: "Inflation is best controlled by:", opts: ["Raising interest rates", "Blaming the opposition", "Printing more money", "Changing the topic"], ans: 0 },
-    { q: "FDI stands for:", opts: ["Foreign Direct Investment", "Free Dosa Initiative", "Fake Data Incoming", "Fund Diversion Index"], ans: 0 },
+    { q: "A minister has ₹100 crore. He spends ₹200 crore on his campaign. Where did the extra money come from?", opts: ["Savings", "Donations", "Don't ask", "A very generous uncle"], ans: 2 },
+    { q: "If 2 ministers fight on TV for 2 hours, how much work gets done?", opts: ["Double the work", "Exactly 0 units", "Negative work", "The TV gets damaged"], ans: 2 },
+    { q: "A scam is discovered on Monday. By Friday it is:", opts: ["Solved", "Forgotten", "Renamed a 'scheme'", "Blamed on the opposition"], ans: 2 },
+    { q: "What is the correct formula for winning an election?", opts: ["Hard work + honesty", "Free stuff + loud music + confusion", "Policy + execution", "None of the above work"], ans: 1 },
+    { q: "A neta inaugurates a toilet. How many press conferences follow?", opts: ["One", "Seventeen", "One per tile", "Until the next election"], ans: 1 },
   ]
 };
 
